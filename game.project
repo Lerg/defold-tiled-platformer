@@ -1,0 +1,37 @@
+[bootstrap]
+main_collection = /main/main.collectionc
+render = /render/main.renderc
+
+[script]
+shared_state = 1
+
+[display]
+width = 960
+height = 960
+
+[project]
+title = platformer
+
+[model]
+max_count = 10000
+
+[factory]
+max_count = 10000
+
+[game_object]
+max_count = 10000
+
+[collection]
+max_instances = 10000
+
+[graphics]
+default_texture_min_filter = nearest
+default_texture_mag_filter = nearest
+max_draw_calls = 4096
+
+[resource]
+max_resources = 4096
+
+[sprite]
+max_count = 10000
+

@@ -1,0 +1,79 @@
+animations {
+  id: "fall"
+  images {
+    image: "/player/sprites/adventurer-fall-00.png"
+  }
+  images {
+    image: "/player/sprites/adventurer-fall-01.png"
+  }
+  playback: PLAYBACK_LOOP_FORWARD
+  fps: 10
+  flip_horizontal: 0
+  flip_vertical: 0
+}
+animations {
+  id: "idle"
+  images {
+    image: "/player/sprites/adventurer-idle-00.png"
+  }
+  images {
+    image: "/player/sprites/adventurer-idle-01.png"
+  }
+  images {
+    image: "/player/sprites/adventurer-idle-02.png"
+  }
+  images {
+    image: "/player/sprites/adventurer-idle-03.png"
+  }
+  playback: PLAYBACK_LOOP_FORWARD
+  fps: 5
+  flip_horizontal: 0
+  flip_vertical: 0
+}
+animations {
+  id: "jump"
+  images {
+    image: "/player/sprites/adventurer-jump-00.png"
+  }
+  images {
+    image: "/player/sprites/adventurer-jump-01.png"
+  }
+  images {
+    image: "/player/sprites/adventurer-jump-02.png"
+  }
+  images {
+    image: "/player/sprites/adventurer-jump-03.png"
+  }
+  playback: PLAYBACK_ONCE_FORWARD
+  fps: 10
+  flip_horizontal: 0
+  flip_vertical: 0
+}
+animations {
+  id: "run"
+  images {
+    image: "/player/sprites/adventurer-run-00.png"
+  }
+  images {
+    image: "/player/sprites/adventurer-run-01.png"
+  }
+  images {
+    image: "/player/sprites/adventurer-run-02.png"
+  }
+  images {
+    image: "/player/sprites/adventurer-run-03.png"
+  }
+  images {
+    image: "/player/sprites/adventurer-run-04.png"
+  }
+  images {
+    image: "/player/sprites/adventurer-run-05.png"
+  }
+  playback: PLAYBACK_LOOP_FORWARD
+  fps: 10
+  flip_horizontal: 0
+  flip_vertical: 0
+}
+margin: 0
+extrude_borders: 0
+inner_padding: 0

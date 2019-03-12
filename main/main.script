@@ -1,0 +1,52 @@
+go.property('som', 2)
+
+local bump = require('libs.bump')
+local camera = require('libs.camera')
+local hashed = require('libs.hashed')
+local n28s = require('libs.n28s')
+local tiled = require('libs.tiled')
+local utils = require('libs.utils')
+
+local vars = require('vars')
+
+require('map.level')
+
+local script = n28s.new()
+
+function script:init()
+	msg.post('.', 'acquire_input_focus')
+	self.map = tiled.new{
+		filename = 'map.level',
+	}
+	utils.next_frame(function()
+		camera.pan_limit.x = {
+			min = -self.map.width + camera.width / 2,
+			max = -camera.width / 2
+		}
+		camera.pan_limit.y = {
+			min = -self.map.height + camera.height / 2,
+			max = 0
+		}
+	end)
+	self.map:draw()
+
+	vars.map = self.map
+	vars.collision_world = bump.newWorld(32)
+	for i = 1, #self.map.collision_objects do
+		local r = self.map.collision_objects[i]
+		vars.collision_world:add(r, r.x, r.y, r.width, r.height)
+	end
+end
+
+function script:on_input(action_id, action)
+	if action_id == hashed.click then
+		if action.pressed then
+			self.pan_start = camera.pan
+			self.x_start, self.y_start = action.screen_x, action.screen_y
+		else
+			camera.pan_by(self.pan_start, action.screen_x - self.x_start, action.screen_y - self.y_start)
+		end
+	end
+end
+
+n28s.register(script)

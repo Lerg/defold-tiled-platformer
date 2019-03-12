@@ -1,0 +1,39 @@
+local camera = require('libs.camera')
+local n28s = require('libs.n28s')
+
+local script = n28s.new()
+
+function script:init()
+	self.sprite_pred = render.predicate{'tile'}
+	self.constants = render.constant_buffer()
+	self.view = vmath.matrix4()
+	self.clear_bits = {[render.BUFFER_COLOR_BIT] = vmath.vector4(0.8, 0.9, 1, 1), [render.BUFFER_DEPTH_BIT] = 1, [render.BUFFER_STENCIL_BIT] = 0}
+end
+
+function script:update(dt)
+	camera.width = render.get_window_width()
+	camera.height = render.get_window_height()
+	render.clear(self.clear_bits)
+
+	render.set_viewport(0, 0, camera.width, camera.height)
+	render.set_view(self.view)
+
+	local proj_width, proj_height = camera.width / camera.zoom / 2, camera.height / camera.zoom / 2
+	local px, py = camera.pan.x, camera.pan.y
+	render.set_projection(vmath.matrix4_orthographic(-proj_width - px, proj_width - px, -proj_height + py, proj_height + py, -10000, 10000))
+
+	camera.time = camera.time + camera.dt
+	self.constants.time = vmath.vector4(camera.time, 0, 0, 0)
+
+	render.set_depth_mask(false)
+	render.disable_state(render.STATE_CULL_FACE)
+	render.disable_state(render.STATE_STENCIL_TEST)
+
+	render.enable_state(render.STATE_DEPTH_TEST)
+	render.enable_state(render.STATE_BLEND)
+	render.set_blend_func(render.BLEND_SRC_ALPHA, render.BLEND_ONE_MINUS_SRC_ALPHA)
+
+	render.draw(self.sprite_pred)
+end
+
+n28s.register(script)

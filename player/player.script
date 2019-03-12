@@ -1,0 +1,136 @@
+local camera = require('libs.camera')
+local hashed = require('libs.hashed')
+local n28s = require('libs.n28s')
+local utils = require('libs.utils')
+
+local vars = require('vars')
+
+local script = n28s.new()
+
+function script:init()
+	msg.post('.', 'acquire_input_focus')
+	self.current_animation = 'idle'
+	self.actions = {
+		d = false,
+		a = false,
+		space = false
+	}
+
+	self.acceleration = 0.3
+	self.max_speed = 7
+	self.speed = {x = 0, y = 0}
+	self.can_jump = true
+	self.jump_timeout = 0
+
+	local p = vmath.vector3(100, -vars.map.height + 768, 10000)
+	go.set_position(p)
+	self.width, self.height = 32, 48
+	vars.collision_world:add(self, p.x, p.y, self.width, self.height)
+end
+
+function script:update()
+	if self.actions.space then
+		if self.current_animation ~= 'jump' and self.can_jump then
+			sprite.play_flipbook('#sprite', 'jump')
+			self.current_animation = 'jump'
+			self.is_jump = true
+			self.can_jump = false
+			self.jump_timeout = 20
+		end
+	elseif self.actions.d then
+		if self.current_animation ~= 'run_right' then
+			sprite.play_flipbook('#sprite', 'run')
+			sprite.set_hflip('#sprite', false)
+			self.current_animation = 'run_right'
+		end
+	elseif self.actions.a then
+		if self.current_animation ~= 'run_left' then
+			sprite.play_flipbook('#sprite', 'run')
+			sprite.set_hflip('#sprite', true)
+			self.current_animation = 'run_left'
+		end
+	elseif not self.is_jump and not self.is_fall then
+		sprite.play_flipbook('#sprite', 'idle')
+		self.current_animation = 'idle'
+	end
+
+	if self.is_jump and self.jump_timeout > 0 then
+		self.jump_timeout = self.jump_timeout - 1
+		if self.jump_timeout == 0 then
+			self.is_jump = false
+		end
+	end
+
+	if self.is_jump and not self.actions.space then
+		self.is_jump = false
+	end
+
+	if self.actions.d or self.actions.a then
+		local sign = self.actions.d and 1 or -1
+		self.speed.x = utils.clamp(self.speed.x + sign * self.acceleration, -self.max_speed, self.max_speed)
+		if self.is_jump then
+			sprite.set_hflip('#sprite', self.speed.x < 0)
+		end
+	else
+		self.speed.x = 0.8 * self.speed.x
+		if math.abs(self.speed.x) < 0.5 then
+			self.speed.x = 0
+		end
+	end
+
+	if self.is_jump then
+		self.speed.y = 10
+	else
+		self.speed.y = self.speed.y - 0.5
+	end
+	
+	local p = go.get_position()
+	
+	local actual_x, actual_y, cols, len = vars.collision_world:move(self, p.x + self.speed.x, p.y + self.speed.y)
+
+	for i = 1, len do
+		local other = cols[i].other
+		if actual_x + self.width > other.x and actual_x < other.x + other.width then
+			if other.y + other.height <= actual_y then
+				self.speed.y = 0
+				self.is_fall = false
+				self.can_jump = true
+			else
+				if self.speed.y > 0 then
+					self.speed.y = 0
+				end
+				self.is_jump = false
+				self.is_fall = true
+				self.can_jump = false
+			end
+		end
+	end
+
+	if p.y > actual_y then
+		self.is_fall = true
+		self.can_jump = false
+		if self.current_animation ~= 'fall' then
+			sprite.play_flipbook('#sprite', 'fall')
+			self.current_animation = 'fall'
+		end
+	end
+	
+	p.x, p.y = actual_x, actual_y
+	go.set_position(p)
+
+	camera.pan_to(-p.x, p.y)
+end
+
+function script:on_input(action_id, action)
+	for k, v in pairs(self.actions) do
+		if action_id == hashed[k] then
+			if action.pressed then
+				self.actions[k] = true
+			elseif action.released then
+				self.actions[k] = false
+			end
+		end
+	end
+end
+
+n28s.register(script)
